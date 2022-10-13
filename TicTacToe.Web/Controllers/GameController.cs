@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TicTacToe.Contracts;
 using TicTacToe.Contracts.Models;
 using TicTacToe.Core;
+using TicTacToe.Core.Helper;
 using TicTacToe.Core.Services;
 
 namespace TicTacToe.Web
@@ -11,19 +12,21 @@ namespace TicTacToe.Web
     public class GameController : ControllerBase
     {
         private readonly IGameService _gameService;
+        private readonly ComputerLogic _computerLogic;
         public GameController(IGameService gameService)
         {
             _gameService = gameService;
+            _computerLogic = new ComputerLogic();
         }
 
-        [Route("api/getindex")]
+        [Route("api/nextmove")]
         [HttpPost]
-        public IActionResult GetCordinates([FromBody] List<string> characters)
+        public IActionResult NextMove([FromBody] List<string> moves)
         {
             string[,] board = new string[3, 3];
             int row = 0;
             int col = 0;
-            foreach(var character in characters)
+            foreach(var move in moves)
             {
                 if (col == 3)
                 {
@@ -32,11 +35,11 @@ namespace TicTacToe.Web
                 }
 
                 if (col < 3)
-                    board[row, col++] = character;
+                    board[row, col++] = move;
                 
             }
 
-            var cordinates = _gameService.FindBestMove(board);
+            var cordinates = _computerLogic.FindBestMove(board);
             var data = new
             {
                 row = cordinates.row,
@@ -45,12 +48,12 @@ namespace TicTacToe.Web
             return Ok(data);
         }
 
-        [Route("api/winner")]
+        [Route("api/score")]
         [HttpPost]
-        public IActionResult GetWinnerData(GameResult gameResult)
+        public IActionResult Score(GameResult gameScore)
         {
-            var createdresult = _gameService.CreateResult(gameResult);
-            return CreatedAtAction(nameof(GetWinnerData), new { id = gameResult.Id }, createdresult);
+            var createdresult = _gameService.Score(gameScore);
+            return CreatedAtAction(nameof(Score), new { id = gameScore.Id }, createdresult);
         }
     }
 }

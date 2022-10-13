@@ -8,7 +8,6 @@ namespace TicTacToe.Core.Services
 {
     public interface IGameService
     {
-        public Move FindBestMove(string[,] board);
-        public GameResult CreateResult(GameResult gameResult);
+        public GameResult Score(GameResult gameResult);
     }
 }
