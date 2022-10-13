@@ -1,14 +1,20 @@
 ﻿using System;
 using TicTacToe.Contracts;
+using TicTacToe.Contracts.Models;
+using TicTacToe.Core.Services;
 
 namespace TicTacToe.Core
 {
-    public class GameService
+    public class GameService : IGameService
     {
-
         private static string opponent = "x", player = "o";
+        private readonly GameContext _dbContext;
+        public GameService(GameContext gameContext)
+        {
+            _dbContext = gameContext;
+        }
 
-        public static Move findBestMove(string[,] board)
+        public Move FindBestMove(string[,] board)
         {
             int bestVal = -1000;
             Move bestMove = new Move();
@@ -52,7 +58,7 @@ namespace TicTacToe.Core
         // This is the optimal function. It considers all
         // the possible ways the game can go and returns
         // the value of the board
-        private static int findOptimal(string[,] board,
+        private int findOptimal(string[,] board,
                            int depth, Boolean isMax)
         {
             int score = evaluate(board);
@@ -121,7 +127,7 @@ namespace TicTacToe.Core
             }
         }
 
-        private static int evaluate(string[,] board)
+        private int evaluate(string[,] board)
         {
             // Checking for Rows for X or O victory.
             for (int row = 0; row < 3; row++)
@@ -173,13 +179,23 @@ namespace TicTacToe.Core
         // This function returns true if there are moves
         // remaining on the board. It returns false if
         // there are no moves left to play.
-        private static Boolean isMovesLeft(string[,] board)
+        private Boolean isMovesLeft(string[,] board)
         {
             for (int i = 0; i < 3; i++)
                 for (int j = 0; j < 3; j++)
                     if (board[i, j] == "")
                         return true;
             return false;
+        }
+
+        public GameResult CreateResult(GameResult gameResult)
+        {
+            if (gameResult.Winner == null && gameResult.Loser == null)
+                gameResult.Draw = true;
+
+            _dbContext.GameResults.Add(gameResult);
+            _dbContext.SaveChanges();
+            return gameResult;
         }
     } 
 }
